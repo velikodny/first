@@ -1,13 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"io/ioutil"
 )
 
 type Message struct {
@@ -33,6 +34,20 @@ func sendResponse(w http.ResponseWriter, status int, msg interface{}) {
 	json.NewEncoder(w).Encode(msg)
 }
 
+func ResiveJsonGoogleApi (strAddress string) ([]byte, error){
+	resp, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress +"&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
+//	if err != nil {
+//		return "t", err		
+//	}
+
+fmt.Println("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress +"&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
+	
+	defer resp.Body.Close()
+    content, err := ioutil.ReadAll(resp.Body)
+	
+	return content, err
+}
+
 const login = "demo:demo1"
 
 func main() {
@@ -42,7 +57,7 @@ func main() {
 	}
 
 	http.HandleFunc("/address/normalize", func(w http.ResponseWriter, r *http.Request) {
-		
+
 		//---------------------------------------
 
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted Area"`)
@@ -75,6 +90,14 @@ func main() {
 			sendResponse(w, 404, MsgErr{"raw_address required"})
 			return
 		}
+		
+		//---------------------------------------
+		addressForGoogle := strings.Join(raw_address, ",%20")
+		respGoogle, err := ResiveJsonGoogleApi(addressForGoogle)
+		fmt.Println(respGoogle)
+		fmt.Printf("%v", string(respGoogle))
+		
+		//---------------------------------------
 
 		part := strings.Split(raw_address[0], ",")
 
