@@ -20,11 +20,22 @@ type Message struct {
 }
 
 type MessageGoogle struct {
-	Address string `json:"results.formatted_address"`
-	City    string 
-	State   
-	Zipcode int    
-	Country string 
+	result results
+	status string
+}
+
+type results struct {
+	component address_components
+}
+
+type address_components struct{
+	long_name	string
+	short_name	string
+	Type types
+}
+
+type types struct{
+	name []string
 }
 
 type State struct {
