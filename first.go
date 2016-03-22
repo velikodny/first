@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"io/ioutil"
+	"io"
 )
 
 type Message struct {
@@ -17,6 +17,14 @@ type Message struct {
 	State   `json:"state"`
 	Zipcode int    `json:"zipcode"`
 	Country string `json:"country"`
+}
+
+type MessageGoogle struct {
+	Address string `json:"results.formatted_address"`
+	City    string 
+	State   
+	Zipcode int    
+	Country string 
 }
 
 type State struct {
@@ -32,20 +40,6 @@ func sendResponse(w http.ResponseWriter, status int, msg interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(msg)
-}
-
-func ResiveJsonGoogleApi (strAddress string) ([]byte, error){
-	resp, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress +"&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
-//	if err != nil {
-//		return "t", err		
-//	}
-
-fmt.Println("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress +"&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
-	
-	defer resp.Body.Close()
-    content, err := ioutil.ReadAll(resp.Body)
-	
-	return content, err
 }
 
 const login = "demo:demo1"
@@ -90,16 +84,25 @@ func main() {
 			sendResponse(w, 404, MsgErr{"raw_address required"})
 			return
 		}
-		
-		//---------------------------------------
-		addressForGoogle := strings.Join(raw_address, ",%20")
-		respGoogle, err := ResiveJsonGoogleApi(addressForGoogle)
-		fmt.Println(respGoogle)
-		fmt.Printf("%v", string(respGoogle))
-		
-		//---------------------------------------
 
 		part := strings.Split(raw_address[0], ",")
+        
+		//---------------------------------------
+
+        //sep := []byte(" ")
+       // partGoogle := strings.Split(raw_address[0], " ")
+       // addressForGoogle = strings.Join(partGoogle,"+")
+       
+        strAddress := strings.Replace(raw_address[0], " ", "+", -1)
+		respGoogle, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress +"&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
+
+        var mesgGoogle MessageGoogle
+       err = json.NewDecoder(respGoogle.Body).Decode(&mesgGoogle)
+       err = json.NewDecoder(io.LimitReader(respGoogle.Body, 64)).Decode(&mesgGoogle)
+       // err = json.Unmarshal(respGoogle, &mesgGoogle)   
+        fmt.Println(mesgGoogle)
+		
+		//---------------------------------------
 
 		for i, elem := range part {
 			part[i] = strings.Trim(elem, " ")
