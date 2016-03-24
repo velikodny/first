@@ -20,18 +20,18 @@ type Message struct {
 }
 
 type MessageGoogle struct {
-	Results `json : "results"`
+	Results []Results   `json : "results"`
 	Status  string  `json : "status"`
 }
 
 type Results struct {
-	AddressComponents `json : "address_components"`
+	AddressComponents   []Components    `json : "address_components"`
 }
 
-type AddressComponents struct {
+type Components struct {
 	LongName  string    `json : "long_name"`
 	ShortName string    `json : "short_name"`
-	Types    `json : "types"`
+	Types   []Types     `json : "types"`
 }
 
 type Types struct {
@@ -109,7 +109,7 @@ func main() {
 		fmt.Println(mesgGoogle)
 
 		//---------------------------------------
-           //
+        
 		for i, elem := range part {
 			part[i] = strings.Trim(elem, " ")
 		}
