@@ -109,7 +109,7 @@ func main() {
 		fmt.Println(mesgGoogle)
 
 		//---------------------------------------
-
+           //
 		for i, elem := range part {
 			part[i] = strings.Trim(elem, " ")
 		}
