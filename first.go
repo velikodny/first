@@ -4,11 +4,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	//"io"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
-	"io"
 )
 
 type Message struct {
@@ -20,22 +20,22 @@ type Message struct {
 }
 
 type MessageGoogle struct {
-	result results
-	status string
+	Results `json : "results"`
+	Status  string  `json : "status"`
 }
 
-type results struct {
-	component address_components
+type Results struct {
+	AddressComponents `json : "address_components"`
 }
 
-type address_components struct{
-	long_name	string
-	short_name	string
-	Type types
+type AddressComponents struct {
+	LongName  string    `json : "long_name"`
+	ShortName string    `json : "short_name"`
+	Types    `json : "types"`
 }
 
-type types struct{
-	name []string
+type Types struct {
+	Name string   `json : "name"`
 }
 
 type State struct {
@@ -97,22 +97,17 @@ func main() {
 		}
 
 		part := strings.Split(raw_address[0], ",")
-        
-		//---------------------------------------
 
-        //sep := []byte(" ")
-       // partGoogle := strings.Split(raw_address[0], " ")
-       // addressForGoogle = strings.Join(partGoogle,"+")
-       
-        strAddress := strings.Replace(raw_address[0], " ", "+", -1)
-		respGoogle, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress +"&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
+		//--------------------------------------
+		strAddress := strings.Replace(raw_address[0], " ", "+", -1)
+		respGoogle, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress + "&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
 
-        var mesgGoogle MessageGoogle
-       err = json.NewDecoder(respGoogle.Body).Decode(&mesgGoogle)
-       err = json.NewDecoder(io.LimitReader(respGoogle.Body, 64)).Decode(&mesgGoogle)
-       // err = json.Unmarshal(respGoogle, &mesgGoogle)   
-        fmt.Println(mesgGoogle)
-		
+		var mesgGoogle MessageGoogle
+		err = json.NewDecoder(respGoogle.Body).Decode(&mesgGoogle)
+		//err = json.NewDecoder(io.LimitReader(respGoogle.Body, 64)).Decode(&mesgGoogle)
+		// err = json.Unmarshal(respGoogle, &mesgGoogle)
+		fmt.Println(mesgGoogle)
+
 		//---------------------------------------
 
 		for i, elem := range part {
