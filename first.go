@@ -51,25 +51,26 @@ func sendResponse(w http.ResponseWriter, status int, msg interface{}) {
 
 func bypassResultGoogle(res []Results) Message {
 	message := Message{}
-    
-    for _, elemResults := range res {
+
+	for _, elemResults := range res {
 		for key, elemAddress := range elemResults.Address_Components {
 			for _, elemTypes := range elemAddress.Types {
 				switch elemTypes {
-                case "street_number": fallthrough
-                case "route" : 
-                        message.Address += elemResults.Address_Components[key].Long_Name 
-                case "locality" :
-                         message.City = elemResults.Address_Components[key].Long_Name 
-                case "administrative_area_level_1" : 
-                        message.Code = elemResults.Address_Components[key].Short_Name
-                        message.Name = elemResults.Address_Components[key].Long_Name                        
-                case "postal_code" : 
-                        code, _ := strconv.Atoi(elemResults.Address_Components[key].Long_Name) 
-                        message.Zipcode = code
-                case "country" : 
-                        message.Country = elemResults.Address_Components[key].Long_Name    
-                }
+				case "street_number":
+					fallthrough
+				case "route":
+					message.Address += elemResults.Address_Components[key].Long_Name
+				case "locality":
+					message.City = elemResults.Address_Components[key].Long_Name
+				case "administrative_area_level_1":
+					message.Code = elemResults.Address_Components[key].Short_Name
+					message.Name = elemResults.Address_Components[key].Long_Name
+				case "postal_code":
+					code, _ := strconv.Atoi(elemResults.Address_Components[key].Long_Name)
+					message.Zipcode = code
+				case "country":
+					message.Country = elemResults.Address_Components[key].Long_Name
+				}
 
 			}
 		}
@@ -125,7 +126,7 @@ func main() {
 		//--------------------------------------
 		strAddress := strings.Replace(raw_address[0], " ", "+", -1)
 
-        respGoogle, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress + "&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
+		respGoogle, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress + "&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
 
 		var resultGoogle GoogleResponse
 		err = json.NewDecoder(respGoogle.Body).Decode(&resultGoogle)
@@ -135,10 +136,9 @@ func main() {
 
 		//msgPass := Message{}
 
-	
-			findField := bypassResultGoogle(resultGoogle.Results)
+		findField := bypassResultGoogle(resultGoogle.Results)
 
-			fmt.Println(findField)
+		fmt.Println(findField)
 
 		//---------------------------------------
 
