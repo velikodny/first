@@ -19,23 +19,19 @@ type Message struct {
 	Country string `json:"country"`
 }
 
-type MessageGoogle struct {
-	Results []Results   `json : "results"`
-	Status  string  `json : "status"`
+type GoogleResponse struct {
+	Results []Results
+	Status  string
 }
 
 type Results struct {
-	AddressComponents   []Components    `json : "address_components"`
+	Address_Components []Components
 }
 
 type Components struct {
-	LongName  string    `json : "long_name"`
-	ShortName string    `json : "short_name"`
-	Types   []Types     `json : "types"`
-}
-
-type Types struct {
-	Name string   `json : "name"`
+	Long_Name  string
+	Short_Name string
+	Types      []string
 }
 
 type State struct {
@@ -51,6 +47,34 @@ func sendResponse(w http.ResponseWriter, status int, msg interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(msg)
+}
+
+func bypassResultGoogle(res []Results) Message {
+	message := Message{}
+    
+    for _, elemResults := range res {
+		for key, elemAddress := range elemResults.Address_Components {
+			for _, elemTypes := range elemAddress.Types {
+				switch elemTypes {
+                case "street_number": fallthrough
+                case "route" : 
+                        message.Address += elemResults.Address_Components[key].Long_Name 
+                case "locality" :
+                         message.City = elemResults.Address_Components[key].Long_Name 
+                case "administrative_area_level_1" : 
+                        message.Code = elemResults.Address_Components[key].Short_Name
+                        message.Name = elemResults.Address_Components[key].Long_Name                        
+                case "postal_code" : 
+                        code, _ := strconv.Atoi(elemResults.Address_Components[key].Long_Name) 
+                        message.Zipcode = code
+                case "country" : 
+                        message.Country = elemResults.Address_Components[key].Long_Name    
+                }
+
+			}
+		}
+	}
+	return message
 }
 
 const login = "demo:demo1"
@@ -100,16 +124,24 @@ func main() {
 
 		//--------------------------------------
 		strAddress := strings.Replace(raw_address[0], " ", "+", -1)
-		respGoogle, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress + "&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
 
-		var mesgGoogle MessageGoogle
-		err = json.NewDecoder(respGoogle.Body).Decode(&mesgGoogle)
-		//err = json.NewDecoder(io.LimitReader(respGoogle.Body, 64)).Decode(&mesgGoogle)
-		// err = json.Unmarshal(respGoogle, &mesgGoogle)
-		fmt.Println(mesgGoogle)
+        respGoogle, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress + "&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
+
+		var resultGoogle GoogleResponse
+		err = json.NewDecoder(respGoogle.Body).Decode(&resultGoogle)
+		if err != nil {
+			fmt.Fprintf(w, "Error: %v", err)
+		}
+
+		//msgPass := Message{}
+
+	
+			findField := bypassResultGoogle(resultGoogle.Results)
+
+			fmt.Println(findField)
 
 		//---------------------------------------
-        
+
 		for i, elem := range part {
 			part[i] = strings.Trim(elem, " ")
 		}
