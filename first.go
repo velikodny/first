@@ -51,7 +51,7 @@ func sendResponse(w http.ResponseWriter, status int, msg interface{}) {
 
 func bypassResultGoogle(res []Results) Message {
 	message := Message{}
-
+ 
 	for _, elemResults := range res {
 		for key, elemAddress := range elemResults.Address_Components {
 			for _, elemTypes := range elemAddress.Types {
