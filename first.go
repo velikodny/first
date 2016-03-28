@@ -51,7 +51,7 @@ func sendResponse(w http.ResponseWriter, status int, msg interface{}) {
 
 func bypassResultGoogle(res []Results) Message {
 	message := Message{}
- 
+
 	for _, elemResults := range res {
 		for key, elemAddress := range elemResults.Address_Components {
 			for _, elemTypes := range elemAddress.Types {
@@ -81,6 +81,7 @@ func bypassResultGoogle(res []Results) Message {
 const login = "demo:demo1"
 
 func main() {
+	log.SetFlags(-1)
 
 	StateName := map[string]string{
 		"fl": "Florida",
@@ -91,9 +92,9 @@ func main() {
 		//---------------------------------------
 
 		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted Area"`)
-        
-        log.Println("WWW-Authenticate")
-        
+
+		log.Println("WWW-Authenticate")
+
 		slice := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 		fmt.Println(len(slice))
 		if len(slice) != 2 {
@@ -112,15 +113,15 @@ func main() {
 			return
 		}
 
-        log.Println("Authorized user")
-        
+		log.Println("Authorized user")
+
 		//---------------------------------------
 
 		query := r.URL.Query()
 
 		raw_address, ok := query["raw_address"]
 
-        log.Println(`Search "raw_address"`)
+		log.Println(`Search "raw_address"`)
 
 		if !ok {
 			sendResponse(w, 404, MsgErr{"raw_address required"})
@@ -158,11 +159,11 @@ func main() {
 			json.NewEncoder(w).Encode(MsgErr{"raw_address required 2"})
 			return
 		}
-        
-        log.Println(`Found 5 part`)
+
+		log.Println(`Found 5 part`)
 
 		if len(part) == 5 {
-            log.Println(`Сreate a message (json)`)
+			log.Println(`Сreate a message (json)`)
 			code, _ := strconv.Atoi(part[3])
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -171,13 +172,13 @@ func main() {
 			response, _ := json.Marshal(msg)
 			fmt.Fprintf(w, "%+v", string(response))
 		} else {
-            log.Println(`The message (json) is not created`)    
-        }
-        
-        log.Println(`Тhe message (json) is created`)
+			log.Println(`The message (json) is not created`)
+		}
+
+		log.Println(`Тhe message (json) is created`)
 
 	})
-    log.Println("listen tcp localhost:8080")
+	log.Println("listen tcp localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }
