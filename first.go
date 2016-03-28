@@ -128,7 +128,7 @@ func main() {
 
 		query := r.URL.Query()
 
-        log.Print("Query: ")
+		log.Print("Query: ")
 		log.Println(query)
 
 		log.Println(`Search "raw_address"`)
@@ -149,14 +149,14 @@ func main() {
 		strAddress := strings.Replace(raw_address[0], " ", "+", -1)
 
 		log.Println("Address search in Google")
-        
-        log.Println("http.Get: ", "https://maps.googleapis.com/maps/api/geocode/json?address=", strAddress, "&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
+
+		log.Println("http.Get: ", "https://maps.googleapis.com/maps/api/geocode/json?address=", strAddress, "&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
 		respGoogle, err := http.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + strAddress + "&key=AIzaSyC-OyuXWSaNdtjcCTC4oz7W1jxv5MwCP8k&language=en")
 
 		var resultGoogle GoogleResponse
 		err = json.NewDecoder(respGoogle.Body).Decode(&resultGoogle)
 		if err != nil {
-            log.Println(err.Error())
+			log.Println(err.Error())
 			fmt.Fprintf(w, "Error: %v", err)
 		}
 
